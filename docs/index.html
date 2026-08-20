@@ -1,0 +1,1659 @@
+<!-- ============================================================
+     AMS GROUP — ONBOARDING PAGE
+     ============================================================
+     File        : ams-onboarding.html
+     Description : Onboarding reference page for new members of
+                   the Applied Media Systems (AMS) Group at
+                   Technische Universität Ilmenau. Covers team
+                   contacts, account setup, courses (each with
+                   Moodle, Modulbeschreibung, GitHub repo, and
+                   AI Chatbot links), recommended reading, and
+                   building location.
+     Author      : Renato Profeta
+     Group       : Applied Media Systems Group — AMS
+     Institution : Technische Universität Ilmenau
+     Year        : 2026
+     ============================================================
+     STRUCTURE
+       .topnav        — sticky frosted-glass navigation bar
+       .hero          — full-width title block with logo
+       .signalpath    — horizontal audio-jack navigation rail
+       .wrap > sections
+           CH01 #team     — team member cards
+           CH02 #access   — account / system access cards
+           CH03 #courses  — course cards (Bachelor + Master)
+                            each with Moodle, Modulbeschreibung,
+                            GitHub repo, and AI Chatbot links
+           CH04 #reading  — recommended reading list
+           CH05 #location — address card + OpenStreetMap embed
+       footer         — minimal page footer
+       <script>       — IntersectionObserver scroll-reveal
+     ============================================================
+     ASSETS
+       ams_group_tui.png — group logo; must be placed in the same
+                           directory as this HTML file.
+                           Used in both the nav bar (28 px tall)
+                           and the hero section (112 × 112 px);
+                           sizing is handled entirely via CSS.
+     ============================================================
+     FONTS (Google Fonts — loaded via <link> in <head>)
+       Space Grotesk  — display headings, hero title
+       IBM Plex Sans  — body copy, card text
+       IBM Plex Mono  — nav labels, badges, tags, buttons
+============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMS Group — Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+  /* ==========================================================
+     DESIGN TOKENS — CSS Custom Properties
+     All colours, spacing units, and font stacks are defined
+     here as custom properties. To retheme the entire page,
+     update only this block — nothing else needs to change.
+  ========================================================== */
+  :root {
+
+    /* ── Background layers ───────────────────────────────── */
+    --bg:        #0d1310;  /* deepest layer — page background (near-black, green tint) */
+    --panel:     #131c19;  /* mid layer — card and section surfaces                    */
+    --panel-alt: #182420;  /* slightly lighter panel used in the signal-path nodes      */
+    --line:      #243229;  /* borders, dividers, and the dashed cable pattern           */
+
+    /* ── Text ────────────────────────────────────────────── */
+    --text:  #e9f0ec;  /* primary body text — off-white with a faint green cast */
+    --muted: #8ca39a;  /* secondary text — roles, labels, captions, dim details  */
+
+    /* ── Brand accent colours ────────────────────────────── */
+    --signal:     #56e0b0;  /* primary teal — active states, links, accent bars    */
+    --signal-dim: #2f6b56;  /* dimmed teal — hover fills, subdued borders          */
+    --amber:      #f2a65a;  /* secondary amber — alternate link colour              */
+
+    /* ── Shape ───────────────────────────────────────────── */
+    --radius: 10px;  /* standard border-radius applied to all cards and panels */
+
+    /* ── Typography stacks ───────────────────────────────── */
+    --disp: 'Space Grotesk', sans-serif;  /* display font — headings and titles          */
+    --body: 'IBM Plex Sans',  sans-serif; /* body font — paragraphs and UI copy          */
+    --mono: 'IBM Plex Mono',  monospace;  /* monospace font — tags, labels, nav, badges  */
+  }
+
+
+  /* ==========================================================
+     RESET & BASE
+     Minimal reset to remove browser default margin and padding.
+     box-sizing: border-box makes width/height calculations
+     predictable (padding and border are included in dimensions).
+  ========================================================== */
+  * {
+    box-sizing: border-box; /* include padding and border in element dimensions */
+    margin:  0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth; /* animate anchor-link jumps rather than jumping instantly */
+  }
+
+  body {
+    /*
+     * Three-layer background:
+     *   1. Teal radial glow — top-left corner, reinforces the brand accent colour.
+     *   2. Amber radial glow — top-right corner, echoes the secondary colour.
+     *   3. Solid dark base — fills the rest of the viewport.
+     * Opacity is intentionally low (0.05–0.07) so the glows read as atmosphere,
+     * not distraction.
+     */
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(86,224,176,0.07), transparent 45%),
+      radial-gradient(ellipse at 100% 0%,  rgba(242,166,90,0.05),  transparent 40%),
+      var(--bg);
+
+    color:       var(--text);   /* default text colour for all child elements */
+    font-family: var(--body);   /* IBM Plex Sans for all body copy            */
+    line-height: 1.6;           /* comfortable reading rhythm                  */
+
+    /* Smoother font rendering on macOS/WebKit — reduces pixel-level aliasing */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Default link colour — inherits the primary teal accent */
+  a { color: var(--signal); }
+
+  /*
+   * Centred content column.
+   * max-width caps line length for readability on wide screens;
+   * horizontal padding keeps content off the viewport edge on mobile.
+   */
+  .wrap {
+    max-width: 1040px;
+    margin:    0 auto;
+    padding:   0 28px;
+  }
+
+
+  /* ==========================================================
+     STICKY TOP NAVIGATION BAR
+     Stays fixed at the top of the viewport as the user scrolls.
+     Uses a semi-transparent background + backdrop-filter to
+     create a frosted-glass effect over the content beneath.
+     Nav links are hidden on narrow viewports (< 720 px) to
+     avoid crowding small screens — the signal-path rail below
+     the hero serves as the mobile navigation alternative.
+  ========================================================== */
+  .topnav {
+    position: sticky; /* sticks to the top of the viewport on scroll */
+    top:      0;
+    z-index:  50;     /* sits above all page content, below modals   */
+
+    /* Semi-transparent dark background — 88% opacity leaves a hint
+       of the page content visible beneath (frosted-glass effect).   */
+    background:      rgba(13,19,16,0.88);
+    backdrop-filter: blur(8px); /* blurs content behind the bar for the frosted look */
+    border-bottom:   1px solid var(--line); /* subtle separator from page content     */
+  }
+
+  /* Inner row: brand lockup on the left, nav links on the right */
+  .topnav .wrap {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding-top:    12px;
+    padding-bottom: 12px;
+  }
+
+  /* Brand lockup — logo image + site label text side by side */
+  .topnav .brand {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+  }
+
+  /* Logo image in the nav bar — constrained height, auto width preserves aspect ratio */
+  .topnav .brand img {
+    height:        28px;
+    width:         auto;
+    display:       block;  /* removes the default inline baseline gap below the image */
+    border-radius: 6px;    /* proportionally rounded corners to match the hero logo   */
+  }
+
+  /* "AMS GROUP · ONBOARDING" label beside the logo */
+  .topnav .brand span {
+    font-family:    var(--mono);
+    font-size:      12px;
+    letter-spacing: 0.08em;  /* wide tracking suits uppercase monospace labels */
+    color:          var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Horizontal row of section-jump anchor links */
+  .topnav nav {
+    display:   flex;
+    gap:       18px;
+    flex-wrap: wrap; /* wrap to a second line on medium viewports rather than overflow */
+  }
+
+  /* Individual nav anchor links */
+  .topnav nav a {
+    font-family:     var(--mono);
+    font-size:       12px;
+    color:           var(--muted);
+    text-decoration: none;
+    text-transform:  uppercase;
+    letter-spacing:  0.04em;
+  }
+
+  /* Highlight nav link on hover using the primary teal */
+  .topnav nav a:hover { color: var(--signal); }
+
+  /* Hide nav links entirely on narrow viewports — they would wrap unpleasantly */
+  @media (max-width: 720px) { .topnav nav { display: none; } }
+
+
+  /* ==========================================================
+     HERO SECTION
+     Full-width introductory block containing the group logo,
+     eyebrow label ("Applied Media Systems Group · TU Ilmenau"),
+     and the main page title ("Onboarding.").
+  ========================================================== */
+  .hero {
+    position:      relative; /* establishes stacking context for any future overlays */
+    padding:       72px 0 56px;
+    border-bottom: 1px solid var(--line); /* separates hero from signal-path rail below */
+    overflow:      hidden; /* clips any decorative elements that extend beyond the block */
+  }
+
+  /* Flex row that places the logo beside the title text block */
+  .hero-row {
+    display:       flex;
+    align-items:   center;
+    gap:           22px;
+    flex-wrap:     wrap;   /* wraps on very narrow viewports so logo sits above title */
+    margin-bottom: 8px;
+  }
+
+  /* Large group logo in the hero — fixed square size with a teal ambient glow */
+  .hero .logo {
+    width:         112px;
+    height:        112px;
+    flex-shrink:   0;     /* prevents the logo from shrinking when the title text is long */
+    border-radius: 22px;  /* pronounced rounding — clips the logo image to rounded corners */
+
+    /* Soft teal drop shadow reinforces the brand accent without adding a box */
+    filter: drop-shadow(0 0 24px rgba(86,224,176,0.15));
+  }
+
+  /* Eyebrow label above the h1 — "APPLIED MEDIA SYSTEMS GROUP · TU ILMENAU" */
+  .hero .eyebrow {
+    font-family:    var(--mono);
+    font-size:      13px;
+    letter-spacing: 0.14em;  /* very wide tracking for the all-caps label */
+    color:          var(--signal);
+    text-transform: uppercase;
+    display:        flex;
+    align-items:    center;
+    gap:            10px;     /* space between the pulsing dot and the text */
+    margin-bottom:  18px;
+  }
+
+  /* Small pulsing dot to the left of the eyebrow label — signals "live" or "active" */
+  .hero .eyebrow .dot {
+    width:         7px;
+    height:        7px;
+    border-radius: 50%;              /* perfect circle                                  */
+    background:    var(--signal);
+    box-shadow:    0 0 8px var(--signal); /* teal halo around the dot                  */
+    animation:     pulse 2.4s ease-in-out infinite; /* slow breathe animation           */
+  }
+
+  /*
+   * Pulse keyframe animation.
+   * Opacity oscillates between 1 (fully visible) and 0.35 (dim),
+   * creating a slow, breathing "live indicator" effect.
+   */
+  @keyframes pulse {
+    0%, 100% { opacity: 1;    } /* fully opaque at start and end of each cycle */
+    50%       { opacity: 0.35; } /* dimmed at the midpoint                       */
+  }
+
+  /* Main page title — fluid type size scales with viewport width */
+  .hero h1 {
+    font-family:    var(--disp);
+    font-weight:    700;
+
+    /*
+     * clamp(min, preferred, max) fluid type:
+     * — never smaller than 34 px on tiny screens
+     * — scales at 5.6 vw in between
+     * — never larger than 58 px on wide screens
+     */
+    font-size:      clamp(34px, 5.6vw, 58px);
+
+    line-height:    1.06;     /* tighter than body text — appropriate for large headings */
+    letter-spacing: -0.01em; /* slight negative tracking reduces spacing at large sizes  */
+    max-width:      820px;    /* prevents the title from stretching too wide             */
+  }
+
+  /* Teal coloured word inside the h1 (e.g. "Onboarding.") */
+  .hero h1 span { color: var(--signal); }
+
+  /* Optional lead paragraph beneath the h1 */
+  .hero p.lead {
+    margin-top: 20px;
+    max-width:  620px; /* narrower than h1 for comfortable line length */
+    font-size:  16px;
+    color:      var(--muted);
+  }
+
+
+  /* ==========================================================
+     SIGNAL-PATH NAVIGATION RAIL
+     A visual metaphor drawn from audio signal chains: each
+     section is represented as a circular "jack" (connector),
+     and adjacent jacks are linked by a dashed "cable" line.
+     The rail is scrollable horizontally on narrow viewports
+     because min-width prevents the layout from collapsing.
+     Active jacks glow teal; inactive jacks are dimmed.
+  ========================================================== */
+  .signalpath {
+    padding:       32px 0 38px;
+    border-bottom: 1px solid var(--line);
+    overflow-x:    auto; /* enables horizontal scroll on viewports narrower than the rail */
+  }
+
+  /* Flex rail — all nodes and cables in a single horizontal line */
+  .signalpath .rail {
+    display:     flex;
+    align-items: center;
+    min-width:   920px; /* prevents wrapping — rail must always be a single row */
+    gap:         0;     /* gap is provided by the .cable elements between nodes  */
+  }
+
+  /* Individual section-anchor node */
+  .node {
+    font-family:     var(--mono);
+    font-size:       11px;
+    color:           var(--muted);
+    text-align:      center;
+    flex-shrink:     0;   /* nodes must not shrink — fixed width keeps them uniform */
+    width:           120px;
+    text-decoration: none;
+  }
+
+  /* Circular connector jack inside each node */
+  .node .jack {
+    width:         12px;
+    height:        12px;
+    border-radius: 50%;                   /* perfect circle — the "jack" shape          */
+    background:    var(--panel-alt);      /* dark fill to distinguish from the border   */
+    border:        2px solid var(--signal-dim); /* dimmed teal ring around the jack     */
+    margin:        0 auto 8px;            /* centred horizontally, spaced above label   */
+  }
+
+  /* Active state — the jack glows teal when the section has content */
+  .node.active .jack {
+    border-color: var(--signal);
+    box-shadow:   0 0 10px rgba(86,224,176,0.5); /* teal halo to simulate a lit jack   */
+  }
+
+  /* Hover — label text brightens to teal */
+  .node:hover { color: var(--signal); }
+
+  /*
+   * Dashed cable connecting two adjacent nodes.
+   * Implemented as a repeating-linear-gradient on a 2 px tall element:
+   * — 6 px solid segment (--line colour)
+   * — 4 px transparent gap
+   * margin-top: -24px pulls the cable up to vertically align with the
+   * centre of the jack circles above.
+   */
+  .cable {
+    flex:   1;    /* fills all remaining space between the fixed-width nodes */
+    height: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--line)  0 6px,      /* 6 px coloured dash  */
+      transparent  6px 10px    /* 4 px transparent gap */
+    );
+    margin-top: -24px; /* vertically centres the cable with the jack circles */
+  }
+
+
+  /* ==========================================================
+     CONTENT SECTIONS — .track
+     Each major content block (Team, Access, Courses, etc.) uses
+     this class. scroll-margin-top offsets the jump target so
+     the sticky nav bar does not obscure the section heading
+     when the user clicks an anchor link.
+  ========================================================== */
+  section.track {
+    padding:          52px 0;
+    border-bottom:    1px solid var(--line);
+
+    /* Pushes the scroll target down by the height of the sticky nav,
+       so the section heading is fully visible after an anchor jump.  */
+    scroll-margin-top: 70px;
+  }
+
+  /* Section header row: channel-tag badge on the left, h2 on the right */
+  .track-head {
+    display:       flex;
+    align-items:   baseline; /* aligns tag and heading on their text baselines */
+    gap:           16px;
+    margin-bottom: 24px;
+  }
+
+  /* Monospaced badge showing the channel number (CH01, CH02, …) */
+  .track-tag {
+    font-family:    var(--mono);
+    font-size:      12px;
+    color:          var(--bg);       /* dark text on the teal background — inverted    */
+    background:     var(--signal);   /* solid teal fill                                */
+    padding:        3px 9px;
+    border-radius:  4px;
+    letter-spacing: 0.05em;
+    flex-shrink:    0; /* badge must not shrink when the heading wraps to multiple lines */
+  }
+
+  /* Section heading */
+  .track-head h2 {
+    font-family: var(--disp);
+    font-weight: 600;
+    font-size:   24px;
+  }
+
+  /* Optional muted sub-heading that can appear below .track-head */
+  .track-sub {
+    color:         var(--muted);
+    font-size:     14px;
+    max-width:     640px; /* narrower than the content column for comfortable line length */
+    margin-bottom: 24px;
+  }
+
+
+  /* ==========================================================
+     CARD GRID
+     Responsive auto-fit grid used for Access and Course cards.
+     minmax(240px, 1fr) means:
+     — each column is at least 240 px wide
+     — columns share remaining space equally (1fr)
+     — the browser decides how many columns fit per row
+     This produces a naturally reflowing layout without breakpoints.
+  ========================================================== */
+  .grid {
+    display:               grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap:                   16px;
+  }
+
+  /* Individual info card */
+  .card {
+    background:    var(--panel);
+    border:        1px solid var(--line);
+    border-radius: var(--radius);
+    padding:       20px;
+  }
+
+  .card h3 {
+    font-family:   var(--body);  /* body font (not display) — card headings are small */
+    font-weight:   600;
+    font-size:     15px;
+    margin-bottom: 8px;
+  }
+
+  /* Card body copy — slightly smaller and muted for hierarchy */
+  .card p { color: var(--muted); font-size: 13.5px; }
+
+  /* Row of link buttons at the bottom of a card */
+  .card .links {
+    margin-top: 12px;
+    display:    flex;
+    gap:        10px;
+    flex-wrap:  wrap; /* buttons wrap to a new line if the card is too narrow */
+  }
+
+  /* Primary link button — teal outline style */
+  .card .links a {
+    font-family:     var(--mono);
+    font-size:       11px;
+    border:          1px solid var(--signal-dim); /* dimmed teal border */
+    color:           var(--signal);
+    padding:         4px 9px;
+    border-radius:   5px;
+    text-decoration: none;
+  }
+
+  /* Fill the button background with dimmed teal on hover */
+  .card .links a:hover { background: var(--signal-dim); }
+
+  /* Alternate link button — amber outline, used for secondary actions */
+  .card .links a.alt { border-color: #6b5730; color: var(--amber); }
+  .card .links a.alt:hover { background: #6b5730; }
+
+
+  /* ==========================================================
+     PUBLICATIONS – READING LIST
+     Each <li> shows the publication title/link on the left and
+     a coloured type badge on the right. Group headings use the
+     teal accent; PAPER badges are teal-outlined, BOOK badges
+     are amber-outlined to visually distinguish entry types.
+  ========================================================== */
+  ul.reading { list-style: none; }
+
+  ul.reading li {
+    padding:         13px 16px;
+    border-bottom:   1px solid var(--line);
+    display:         flex;
+    justify-content: space-between;
+    gap:             20px;
+    align-items:     center;
+    border-radius:   6px;
+    transition:      background 0.15s ease;
+  }
+
+  ul.reading li:hover { background: var(--panel); }
+  ul.reading li:last-child { border-bottom: none; }
+
+  /* Title + author/venue wrapper */
+  ul.reading .rtitle {
+    font-size:   14px;
+    font-weight: 500;
+    line-height: 1.5;
+    color:       var(--text);
+  }
+
+  /* The clickable publication link */
+  ul.reading .rtitle a {
+    color:           var(--signal);
+    text-decoration: none;
+    font-weight:     600;
+  }
+  ul.reading .rtitle a:hover { text-decoration: underline; }
+
+  /* Author / venue line below the title link */
+  ul.reading .rmeta {
+    display:     block;
+    font-size:   12px;
+    color:       var(--muted);
+    margin-top:  3px;
+    font-family: var(--mono);
+  }
+
+  /* Base badge style */
+  ul.reading .rtype {
+    font-family:   var(--mono);
+    font-size:     10px;
+    font-weight:   500;
+    letter-spacing: 0.06em;
+    white-space:   nowrap;
+    padding:       3px 8px;
+    border-radius: 4px;
+    flex-shrink:   0;
+  }
+
+  /* PAPER badge — teal outline */
+  ul.reading .rtype.paper {
+    color:        var(--signal);
+    border:       1px solid var(--signal-dim);
+    background:   rgba(86,224,176,0.06);
+  }
+
+  /* BOOK badge — amber outline */
+  ul.reading .rtype.book {
+    color:      var(--amber);
+    border:     1px solid #6b5730;
+    background: rgba(242,166,90,0.07);
+  }
+
+  /* Publication group sub-headings */
+  .pub-group-heading {
+    font-family:    var(--disp);
+    font-size:      13px;
+    font-weight:    600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color:          var(--muted);
+    border-left:    3px solid var(--signal);
+    padding-left:   10px;
+    margin:         28px 0 6px;
+  }
+
+
+  /* ==========================================================
+     TEAM GRID
+     Responsive grid of person cards. Each card has a 4 px
+     teal accent bar on its left edge, applied via ::before
+     pseudo-element to avoid adding extra HTML elements.
+  ========================================================== */
+  .team-grid {
+    display:               grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap:                   16px;
+  }
+
+  /* Person card */
+  .person {
+    background:    var(--panel);
+    border:        1px solid var(--line);
+    border-radius: var(--radius);
+    padding:       20px;
+    position:      relative; /* required for the ::before pseudo-element to position against */
+    overflow:      hidden;   /* clips the ::before bar to the card's border-radius           */
+  }
+
+  /*
+   * Teal left accent bar — rendered as a pseudo-element so no extra
+   * HTML is needed. Stretches the full height of the card (top: 0,
+   * bottom: 0) and is clipped by the parent's overflow: hidden.
+   */
+  .person::before {
+    content:    "";
+    position:   absolute;
+    left:   0;
+    top:    0;
+    bottom: 0;
+    width:      4px;
+    background: var(--signal); /* solid teal bar for all team members */
+  }
+
+  /* Person name */
+  .person h3 {
+    font-family:   var(--disp);
+    font-size:     17px;
+    margin-bottom: 2px;
+  }
+
+  /* Role / title line — monospaced and muted for visual hierarchy */
+  .person .role {
+    font-family:   var(--mono);
+    font-size:     11.5px;
+    color:         var(--muted);
+    margin-bottom: 12px; /* space between role and the first detail line */
+  }
+
+  /* Contact detail row (phone, email, office) */
+  .person .detail {
+    font-size:  13px;
+    color:      var(--text);
+    opacity:    0.9;   /* slight transparency distinguishes details from the name */
+    margin-top: 4px;
+  }
+
+  /* Dimmed variant — used for TBD / placeholder detail lines */
+  .person .detail.dim { color: var(--muted); }
+
+  /* Links inside a person card (email addresses) */
+  .person a { color: var(--signal); text-decoration: none; }
+  .person a:hover { text-decoration: underline; }
+
+
+  /* ==========================================================
+     GITHUB REPOSITORY LIST
+     Each repository is a <li> with the repo name and short
+     description on the left and an "Open →" button on the right.
+  ========================================================== */
+  .repo-list { list-style: none; }
+
+  /* Repository row */
+  .repo-list li {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between; /* name left, button right    */
+    gap:             16px;
+    padding:         14px 18px;
+    border:          1px solid var(--line);
+    border-radius:   8px;
+    margin-bottom:   10px;
+    background:      var(--panel);
+  }
+
+  /* Repo name in monospace; description in muted colour via a nested <span> */
+  .repo-list .rname { font-family: var(--mono); font-size: 13.5px; }
+  .repo-list .rname span { color: var(--muted); }
+
+  /* "Open →" button — same outlined style as card link buttons */
+  .repo-list a.go {
+    font-family:     var(--mono);
+    font-size:       11px;
+    color:           var(--signal);
+    text-decoration: none;
+    border:          1px solid var(--signal-dim);
+    padding:         5px 10px;
+    border-radius:   5px;
+    white-space:     nowrap; /* label must never wrap — button stays on one line */
+  }
+  .repo-list a.go:hover { background: var(--signal-dim); }
+
+
+  /* ==========================================================
+     LOCATION SECTION
+     Two-column layout: address card on the left (wider), map
+     embed on the right. Collapses to a single column below
+     720 px so both blocks are readable on mobile.
+  ========================================================== */
+  .loc-wrap {
+    display:               grid;
+    grid-template-columns: 1.1fr 1fr; /* address column slightly wider than map */
+    gap:                   20px;
+  }
+
+  /* Collapse to single column on narrow viewports */
+  @media (max-width: 720px) { .loc-wrap { grid-template-columns: 1fr; } }
+
+  /* Address and links card */
+  .loc-card {
+    background:    var(--panel);
+    border:        1px solid var(--line);
+    border-radius: var(--radius);
+    padding:       22px;
+  }
+  .loc-card h3 { font-family: var(--disp); font-size: 17px; margin-bottom: 10px; }
+  .loc-card p  { color: var(--muted); font-size: 14px; margin-bottom: 6px; }
+
+  /* Container for the OpenStreetMap iframe */
+  .map-embed {
+    border:        1px solid var(--line);
+    border-radius: var(--radius);
+    overflow:      hidden; /* clips the iframe to the border-radius */
+    height:        280px;
+  }
+
+  /*
+   * OpenStreetMap iframe.
+   * The CSS filter approximates a dark-mode map:
+   *   grayscale(0.15) — desaturates slightly, reducing colour noise
+   *   invert(0.92)    — near-inverts the map so dark tiles become light backgrounds
+   *   contrast(0.9)   — softens the inverted contrast to match the page palette
+   */
+  .map-embed iframe {
+    width:  100%;
+    height: 100%;
+    border: 0; /* removes the default <iframe> border */
+    filter: grayscale(0.15) invert(0.92) contrast(0.9);
+  }
+
+
+  /* ==========================================================
+     FOOTER
+     Minimal centred label at the bottom of the page.
+  ========================================================== */
+  footer {
+    padding:    40px 0 70px; /* extra bottom padding keeps content above mobile browser chrome */
+    text-align: center;
+  }
+
+  footer p {
+    font-family: var(--mono);
+    font-size:   12px;
+    color:       var(--muted);
+  }
+
+
+  /* ==========================================================
+     SCROLL REVEAL ANIMATION
+     Elements with the .reveal class start invisible and slightly
+     shifted downward. When the IntersectionObserver (see bottom
+     of file) detects that a .reveal element has entered the
+     viewport, it adds the .in class, which triggers the CSS
+     transition to full opacity and natural position.
+     Each element animates in only once — the observer does not
+     remove .in when the element scrolls out of view.
+  ========================================================== */
+  .reveal {
+    opacity:   0;                /* start invisible                         */
+    transform: translateY(14px); /* start 14 px below its natural position  */
+
+    /* Animate both properties simultaneously over 0.6 s with an ease curve */
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  /* Final state — fully visible, in natural position */
+  .reveal.in {
+    opacity:   1;
+    transform: translateY(0);
+  }
+
+
+  /* ==========================================================
+     4-WEEK PLAN — .week-grid
+     Four equal columns (one per week), each a .week-card.
+     Collapses to two columns below 720 px, one below 480 px.
+  ========================================================== */
+  .week-grid {
+    display:               grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:                   16px;
+  }
+  @media (max-width: 720px) { .week-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .week-grid { grid-template-columns: 1fr; } }
+
+  .week-card {
+    background:    var(--panel);
+    border:        1px solid var(--line);
+    border-radius: var(--radius);
+    padding:       20px;
+    position:      relative;
+    overflow:      hidden;
+  }
+
+  /* Teal top-edge accent bar */
+  .week-card::before {
+    content:    "";
+    position:   absolute;
+    top:    0; left: 0; right: 0;
+    height:     3px;
+    background: var(--signal);
+  }
+
+  .week-card .week-label {
+    font-family:    var(--mono);
+    font-size:      10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color:          var(--signal);
+    margin-bottom:  6px;
+  }
+
+  .week-card h3 {
+    font-family:   var(--disp);
+    font-size:     14px;
+    font-weight:   600;
+    margin-bottom: 10px;
+  }
+
+  .week-card ul {
+    list-style: none;
+    padding:    0;
+  }
+
+  .week-card ul li {
+    font-size:     13px;
+    color:         var(--muted);
+    padding:       3px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .week-card ul li:last-child { border-bottom: none; }
+
+
+  /* ==========================================================
+     CHECKLIST — .checklist
+     Visual-only checkboxes using a teal square indicator.
+     Items are never interactive — purely informational.
+  ========================================================== */
+  .checklist {
+    list-style:  none;
+    columns:     2;
+    column-gap:  32px;
+  }
+  @media (max-width: 600px) { .checklist { columns: 1; } }
+
+  .checklist li {
+    display:       flex;
+    align-items:   flex-start;
+    gap:           10px;
+    font-size:     13.5px;
+    color:         var(--muted);
+    padding:       7px 0;
+    border-bottom: 1px solid var(--line);
+    break-inside:  avoid;
+  }
+  .checklist li:last-child { border-bottom: none; }
+
+  /* Square checkbox indicator */
+  .checklist li::before {
+    content:       "";
+    flex-shrink:   0;
+    width:         14px;
+    height:        14px;
+    border:        1.5px solid var(--signal-dim);
+    border-radius: 3px;
+    margin-top:    2px;
+  }
+
+
+  /* ── .tbd — non-clickable "pending" placeholder.
+     Styled like a muted amber badge; rendered as a <span>
+     (not an <a>) so it is never mistaken for a link.
+     cursor: default and user-select: none reinforce this. */
+  .card .links .tbd {
+    font-family:   var(--mono);
+    font-size:     11px;
+    border:        1px solid #4a3a20;
+    color:         #8a6a3a;
+    padding:       4px 9px;
+    border-radius: 5px;
+    cursor:        default;
+    user-select:   none;
+  }
+
+</style>
+
+</head>
+<body>
+
+
+<!-- ============================================================
+     STICKY NAVIGATION BAR — .topnav
+     ============================================================
+     Role     : Persistent site-wide navigation, visible at all
+                scroll positions (position: sticky, top: 0).
+     Contains : .brand  — logo image (28 px) + "AMS Group ·
+                          Onboarding" label in monospace.
+                <nav>   — anchor links to each section.
+     Note     : Nav links are hidden on viewports < 720 px via
+                @media query; the signal-path rail below the hero
+                acts as the alternative touch navigation.
+     CSS      : .topnav, .topnav .wrap, .topnav .brand,
+                .topnav .brand img, .topnav .brand span,
+                .topnav nav, .topnav nav a, .topnav nav a:hover
+============================================================ -->
+<div class="topnav">
+  <div class="wrap">
+    <div class="brand">
+      <img src="ams_group_tui.png" alt="AMS Group logo">
+      <span>AMS Group · Onboarding</span>
+    </div>
+    <nav>
+      <a href="#team">Team</a>
+      <a href="#access">Access</a>
+      <a href="#courses">Courses</a>
+      <a href="#reading">Publications</a>
+      <a href="#plan">Plan</a>
+      <a href="#research">Research</a>
+      <a href="#checklist">Checklist</a>
+      <a href="#location">Location</a>
+    </nav>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     HERO SECTION — .hero
+     ============================================================
+     Role     : Full-width introductory block at the top of the
+                page. Sets the visual identity and page purpose.
+     Contains : .eyebrow — pulsing dot + institution label
+                           ("Applied Media Systems Group · TU
+                           Ilmenau") above the main heading.
+                .hero-row — logo image (112 × 112 px) + h1
+                            "Onboarding." side by side.
+     CSS      : .hero, .hero-row, .hero .logo, .hero .eyebrow,
+                .hero .eyebrow .dot (@keyframes pulse), .hero h1,
+                .hero h1 span, .hero p.lead
+     Fluid type: h1 uses clamp(34px, 5.6vw, 58px) — scales with
+                 the viewport width between min and max bounds.
+============================================================ -->
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span>Applied Media Systems Group · TU Ilmenau</div>
+    <div class="hero-row">
+      <img class="logo" src="ams_group_tui.png" alt="AMS Group — Applied Media Systems Group, TU Ilmenau">
+      <h1>Onboarding.</h1>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     SIGNAL-PATH NAVIGATION RAIL — .signalpath
+     ============================================================
+     Role     : Secondary visual navigation + section overview.
+     Metaphor : An audio signal chain — each section is a
+                circular "jack" (audio connector) and adjacent
+                jacks are linked by a dashed "cable" line.
+     Contains : .rail — flex row of .node and .cable elements.
+                .node — circular jack + section label, each an
+                        <a> anchor that jumps to its section.
+                .cable — spacer div rendered as a dashed line
+                         via repeating-linear-gradient.
+     Scroll   : min-width: 920 px keeps the rail in a single
+                row; overflow-x: auto allows horizontal scrolling
+                on narrow viewports.
+     CSS      : .signalpath, .signalpath .rail, .node, .node .jack,
+                .node.active .jack, .node:hover, .cable
+============================================================ -->
+<div class="signalpath">
+  <div class="wrap">
+    <div class="rail">
+      <a class="node active" href="#team"><div class="jack"></div>TEAM</a>
+      <div class="cable"></div>
+      <a class="node active" href="#access"><div class="jack"></div>ACCESS</a>
+      <div class="cable"></div>
+      <a class="node active" href="#courses"><div class="jack"></div>COURSES</a>
+      <div class="cable"></div>
+      <a class="node active" href="#reading"><div class="jack"></div>PUBLICATIONS</a>
+      <div class="cable"></div>
+      <a class="node active" href="#plan"><div class="jack"></div>PLAN</a>
+      <div class="cable"></div>
+      <a class="node active" href="#research"><div class="jack"></div>RESEARCH</a>
+      <div class="cable"></div>
+      <a class="node active" href="#checklist"><div class="jack"></div>CHECKLIST</a>
+      <div class="cable"></div>
+      <a class="node active" href="#location"><div class="jack"></div>LOCATION</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MAIN CONTENT COLUMN — .wrap
+     ============================================================
+     All five content sections are children of this centred
+     column (max-width: 1040 px, 28 px horizontal padding).
+     Each section carries:
+       class="track"  — layout (padding, border-bottom, scroll-margin)
+       class="reveal" — scroll-reveal animation (.reveal → .reveal.in)
+       id="…"         — anchor target for nav and signal-path links
+============================================================ -->
+<div class="wrap">
+
+  <!-- ============================================================
+       CH01 — TEAM
+       ============================================================
+       Role    : Group member cards with contact details.
+       Layout  : .team-grid — CSS auto-fit grid (min 230 px cols).
+       Cards   : Each .person card shows name (h3, Space Grotesk),
+                 .role (monospace, muted), and .detail rows for
+                 phone, email, and office. A 4 px teal left-edge
+                 accent bar is rendered via ::before pseudo-element.
+       CSS     : .team-grid, .person, .person::before, .person h3,
+                 .person .role, .person .detail, .person .detail.dim
+  ============================================================ -->
+  <section class="track reveal" id="team">
+    <div class="track-head">
+      <span class="track-tag">CH01</span>
+      <h2>Team</h2>
+    </div>
+
+    <div class="team-grid">
+      <div class="person">
+        <h3>Prof. Dr.-Ing. Gerald Schuller</h3>
+        <div class="role">Fachgebietsleiter</div>
+        <div class="detail">+49 3677 69-2756</div>
+        <div class="detail"><a href="mailto:gerald.schuller@tu-ilmenau.de">gerald.schuller@tu-ilmenau.de</a></div>
+        <div class="detail dim">Kirchhoffbau, Raum K 3014</div>
+      </div>
+      <div class="person">
+        <h3>Sushmita Raj, M. Sc.</h3>
+        <div class="role">Wissenschaftliche Mitarbeiterin, Promovendin</div>
+        <div class="detail">+49 3677 69-1675</div>
+        <div class="detail"><a href="mailto:sushmita.raj@tu-ilmenau.de">sushmita.raj@tu-ilmenau.de</a></div>
+        <div class="detail dim">Kirchhoffbau, Raum K 3013</div>
+      </div>
+      <div class="person">
+        <h3>Renato Profeta, M. Sc.</h3>
+        <div class="role">Wissenschaftlicher Mitarbeiter, Promovend</div>
+        <div class="detail"><a href="mailto:renato.profeta@tu-ilmenau.de">renato.profeta@tu-ilmenau.de</a></div>
+      </div>
+      <div class="person">
+        <h3>Krishnendu</h3>
+        <div class="role">— role to be added</div>
+        <div class="detail dim">Phone — TBD</div>
+        <div class="detail dim">Email — TBD</div>
+        <div class="detail dim">Office — TBD</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       CH02 — ACCESS & ACCOUNTS
+       ============================================================
+       Role    : All digital systems a new member needs to access.
+       Layout  : .grid — CSS auto-fit grid (min 240 px columns).
+       Cards   : TU Ilmenau login, Nextcloud, Moodle, GitHub org,
+                 Jira (TBD placeholder), Timetable & Exams.
+       Links   : All external links use target="_blank" and
+                 rel="noopener" to open in a new tab safely.
+       CSS     : .grid, .card, .card h3, .card p, .card .links,
+                 .card .links a, .card .links a.alt, .card .links .tbd
+  ============================================================ -->
+  <section class="track reveal" id="access">
+    <div class="track-head">
+      <span class="track-tag">CH02</span>
+      <h2>Access &amp; accounts</h2>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>TU Ilmenau login</h3>
+        <p>Central university credentials required for access to most institutional systems. Lecture chatbots are accessible without authentication.</p>
+      </div>
+      <div class="card">
+        <h3>Nextcloud</h3>
+        <p>Institutional file storage for shared working material, course resources, and group documents.</p>
+        <div class="links"><a href="https://cloud.tu-ilmenau.de/login" target="_blank" rel="noopener">Log in →</a></div>
+      </div>
+      <div class="card">
+        <h3>Moodle</h3>
+        <p>Learning management system hosting course pages, assignments, quizzes, and the Virtual Programming Lab.</p>
+        <div class="links"><a href="https://moodle.tu-ilmenau.de/" target="_blank" rel="noopener">Open Moodle →</a></div>
+      </div>
+      <div class="card">
+        <h3>GitHub</h3>
+        <p>AMS GitHub organisation hosting all course repositories, tutorial notebooks, and research software.</p>
+        <div class="links"><a href="https://github.com/TUIlmenauAMS" target="_blank" rel="noopener">TUIlmenauAMS →</a></div>
+      </div>
+      <div class="card">
+        <h3>Jira</h3>
+        <p>Issue tracking and project management platform for group research and teaching tasks.</p>
+        <div class="links"><a href="#" class="alt">Link — TBD</a></div>
+      </div>
+      <div class="card">
+        <h3>Timetable &amp; exams</h3>
+        <p>Open Timetable for semester schedules; official examination plan for dates, registration deadlines, and regulations.</p>
+        <div class="links">
+          <a href="https://opentimetable.tu-ilmenau.de" target="_blank" rel="noopener">Open Timetable →</a>
+          <a href="https://www.tu-ilmenau.de/studium/im-studium/studienverlauf/administrative-guide/pruefungsplan/bitte-beachten-please-note" target="_blank" rel="noopener" class="alt">Prüfungsplan →</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>AMS Group</h3>
+        <p>Official group website providing an overview of research directions, team composition, and publications.</p>
+        <div class="links"><a href="https://www.tu-ilmenau.de/mt-ams" target="_blank" rel="noopener">AMS Group →</a></div>
+      </div>
+      <div class="card">
+        <h3>Overleaf (LaTeX)</h3>
+        <p>Collaborative LaTeX editor available via TU Ilmenau institutional access for reports, theses, and publications.</p>
+        <div class="links"><a href="https://www.overleaf.com/edu/tu-ilmenau" target="_blank" rel="noopener">Open Overleaf →</a></div>
+      </div>
+      <div class="card">
+        <h3>Onboarding Chatbot</h3>
+        <p>AI assistant covering group infrastructure, tools, and workflows to support orientation during the onboarding period.</p>
+        <div class="links"><a href="https://chatgpt.com/share/6a86cc21-c5d8-83ed-bddf-f97bd9e39911" target="_blank" rel="noopener">Open Chatbot →</a></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       CH03 — COURSES
+       ============================================================
+       Role    : All AMS Group courses — Bachelor and Master.
+       Layout  : Two .grid blocks (Bachelor / Master), each using
+                 CSS auto-fit (min 240 px columns).
+       Cards   : Each course card has up to four links:
+                   1. Moodle           — course page & materials
+                   2. Modulbeschreibung — official module description
+                   3. GitHub           — tutorial repository
+                      (github.com/TUIlmenauAMS/<repo>)
+                   4. Chatbot          — course-specific GPT assistant
+                 Links that are not yet available use a .tbd <span>
+                 placeholder (non-clickable, styled amber/muted).
+       CSS     : .grid, .card, .card .links a, .card .links .tbd
+  ============================================================ -->
+  <section class="track reveal" id="courses">
+    <div class="track-head">
+      <span class="track-tag">CH03</span>
+      <h2>Courses</h2>
+    </div>
+
+    <h3 style="font-family:var(--disp); font-size:16px; margin-bottom:14px; color:var(--signal);">Bachelor</h3>
+    <div class="grid" style="margin-bottom:32px;">
+
+      <div class="card">
+        <h3>Computeranimation</h3>
+        <p>Technologische Grundlagen, geschichtliche Hintergründe und Arbeitsabläufe der Produktion; Umsetzung in Python, OpenGL und GLUT bis hin zu eigener 3D-Software.</p>
+        <div class="links">
+          <a href="https://moodle.tu-ilmenau.de/enrol/index.php?id=1843" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=3313&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/CA_Tutorials" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-Rf59Ngh6w-computer-animation-assistant" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Digitale Signalverarbeitung <span style="color:var(--muted); font-weight:400;">(DSM)</span></h3>
+        <p>Geschichte der Fernsehtechnik, Psycho-Optik, analoge und digitale Fernsehsysteme, Übertragungs- und Modulationsverfahren.</p>
+        <div class="links">
+          <a href="https://moodle.tu-ilmenau.de/enrol/index.php?id=1842" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=2352&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/GVT_Lecture_Colab" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-67608f74115481919e7b69f47a64acb5-dsp-mediatech-tutor" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Praxiswerkstatt ML für Audiosignale <span style="color:var(--muted); font-weight:400;">(PyTorch)</span></h3>
+        <p>Application of machine learning to audio signals: source separation, noise and keyword recognition, and filter-bank decomposition using neural networks.</p>
+        <div class="links">
+          <a href="https://moodle.tu-ilmenau.de/enrol/index.php?id=1278" target="_blank" rel="noopener">Moodle →</a>
+          <span class="tbd">Modulbeschreibung — TBD</span>
+          <a href="https://github.com/TUIlmenauAMS/MLfAS_Tutorials" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-6836fafbee9c8191ae748682f63b7b20-deep-learning-for-audio-tutor" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Multimediaprogrammierung</h3>
+        <p>Entwickeln einer Multimedia Web App mit Python, JavaScript &amp; HTML5.</p>
+        <div class="links">
+          <a href="https://moodle.tu-ilmenau.de/enrol/index.php?id=1844" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=3509&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/MultimediaProgrammingPrograms" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-YmW9BwZhH-multimedia-programming-guide" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+    </div>
+
+    <h3 style="font-family:var(--disp); font-size:16px; margin-bottom:14px; color:var(--signal);">Master</h3>
+    <div class="grid">
+
+      <div class="card">
+        <h3>Audio Coding</h3>
+        <div class="links">
+          <a href="https://moodle.tu-ilmenau.de/enrol/index.php?id=1841" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=4173&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/AudioCoding_Tutorials" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-Ag8Ila1M6-audio-coding-guide" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>ADSP <span style="color:var(--muted); font-weight:400;">(Advanced Digital Signal Processing)</span></h3>
+        <div class="links">
+          <a href="https://moodle2.tu-ilmenau.de/course/view.php?id=204" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=3044&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/ADSP_Tutorials" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-XzbLoBB0u-dsp-master-guide" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Multirate Signal Processing</h3>
+        <div class="links">
+          <a href="https://moodle2.tu-ilmenau.de/course/view.php?id=412" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=3519&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/MRSP_Tutorials" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-iCDoSYHTV-multirate-mentor" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Video Coding</h3>
+        <div class="links">
+          <a href="https://moodle2.tu-ilmenau.de/enrol/index.php?id=398#section-0" target="_blank" rel="noopener">Moodle →</a>
+          <a href="https://campus.tu-ilmenau.de:443/qisserver/pages/startFlow.xhtml?_flowId=detailView-flow&unitId=2213&periodId=8&navigationPosition=studiesOffered,moduleDescriptions,searchElementsInModuleDescription" target="_blank" rel="noopener">Modulbeschreibung →</a>
+          <a href="https://github.com/TUIlmenauAMS/Videocoding" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-SpWxPChDs-video-coding-tutor" target="_blank" rel="noopener">Chatbot →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CH04 — READING LIST
+       ============================================================
+       Role    : Recommended papers and textbooks for new members.
+       Layout  : ul.reading — unstyled list; each <li> is a flex
+                 row with .rtitle (left) and .rtype badge (right).
+                 Items are separated by a thin border-bottom;
+                 the last item has no border to avoid doubling
+                 with the section's own bottom border.
+       CSS     : ul.reading, ul.reading li, ul.reading li:last-child,
+                 ul.reading .rtitle, ul.reading .rtype
+  ============================================================ -->
+  <section class="track reveal" id="reading">
+    <div class="track-head">
+      <span class="track-tag">CH04</span>
+      <h2>Publications – Reading List</h2>
+    </div>
+
+    <p class="track-sub">A curated onboarding reading list for the AMS group, in suggested reading order. <a href="https://www.tu-ilmenau.de/universitaet/fakultaeten/fakultaet-elektrotechnik-und-informationstechnik/profil/institute-und-fachgebiete/fachgebiet-angewandte-mediensysteme/publikationen" target="_blank" rel="noopener">Full AMS publications page →</a></p>
+
+    <!-- Group 1: Books -->
+    <div class="pub-group-heading">Books &amp; Broad Background</div>
+    <ul class="reading" style="margin-bottom:8px;">
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1007/978-3-032-17201-3" target="_blank" rel="noopener">Multirate Signal Processing with Examples in Python</a>
+          <span class="rmeta">Schuller · Springer 2026</span>
+        </span>
+        <span class="rtype book">BOOK</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1007/978-3-030-51249-1" target="_blank" rel="noopener">Filter Banks and Audio Coding: Compressing Audio Signals Using Python</a>
+          <span class="rmeta">Schuller · Springer 2020</span>
+        </span>
+        <span class="rtype book">BOOK</span>
+      </li>
+    </ul>
+
+    <!-- Group 2: Filter banks -->
+    <div class="pub-group-heading">Filter Banks &amp; Low-Delay Audio Coding</div>
+    <ul class="reading" style="margin-bottom:8px;">
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/78.533715" target="_blank" rel="noopener">New Framework for Modulated Perfect Reconstruction Filter Banks</a>
+          <span class="rmeta">Schuller &amp; Smith · IEEE Trans. Signal Process. 1996</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/78.824669" target="_blank" rel="noopener">Modulated Filter Banks with Arbitrary System Delay</a>
+          <span class="rmeta">Schuller &amp; Karp · IEEE Trans. Signal Process. 2000</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/ASPAA.2007.4392985" target="_blank" rel="noopener">Low Delay Filterbanks for Enhanced Low Delay Audio Coding</a>
+          <span class="rmeta">Schnell et al. · IEEE WASPAA 2007</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+    </ul>
+
+    <!-- Group 3: Singing voice separation -->
+    <div class="pub-group-heading">Singing-Voice &amp; Music Source Separation</div>
+    <ul class="reading" style="margin-bottom:8px;">
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/MLSP.2017.8168117" target="_blank" rel="noopener">A Recurrent Encoder-Decoder Approach with Skip-Filtering Connections for Monaural Singing Voice Separation</a>
+          <span class="rmeta">Mimilakis et al. · IEEE MLSP 2017</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/ICASSP.2018.8461822" target="_blank" rel="noopener">Monaural Singing Voice Separation with Skip-Filtering Connections and Recurrent Inference of Time-Frequency Mask</a>
+          <span class="rmeta">Mimilakis et al. · IEEE ICASSP 2018</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+    </ul>
+
+    <!-- Group 4: Source separation -->
+    <div class="pub-group-heading">Low-Delay Multichannel Source Separation</div>
+    <ul class="reading" style="margin-bottom:8px;">
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.21437/Interspeech.2020-1409" target="_blank" rel="noopener">The Method of Random Directions Optimization for Stereo Audio Source Separation</a>
+          <span class="rmeta">Golokolenko &amp; Schuller · INTERSPEECH 2020</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/IEEECONF53345.2021.9723106" target="_blank" rel="noopener">Low Latency Time Domain Multichannel Speech and Music Source Separation</a>
+          <span class="rmeta">Schuller · Asilomar 2021</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+    </ul>
+
+    <!-- Group 5: Perceptual loss -->
+    <div class="pub-group-heading">Perceptual Loss Functions &amp; Timbre</div>
+    <ul class="reading" style="margin-bottom:8px;">
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.1109/IEEECONF60004.2024.10943044" target="_blank" rel="noopener">A Novel Perceptual Loss Function for Audio and Music Quality Differentiable in PyTorch</a>
+          <span class="rmeta">Schuller &amp; Imran · Asilomar 2024</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+    </ul>
+
+    <!-- Group 6: Room acoustics -->
+    <div class="pub-group-heading">Neural Room-Acoustics Prediction</div>
+    <ul class="reading">
+      <li>
+        <span class="rtitle">
+          <a href="https://arxiv.org/abs/2509.24769" target="_blank" rel="noopener">Deep Learning-Based Prediction of Energy Decay Curves from Room Geometry and Material Properties</a>
+          <span class="rmeta">Imran &amp; Schuller · 2025</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://arxiv.org/abs/2509.24834" target="_blank" rel="noopener">Room Impulse Response Prediction with Neural Networks: From Energy Decay Curves to Perceptual Validation</a>
+          <span class="rmeta">Imran &amp; Schuller · 2025</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+      <li>
+        <span class="rtitle">
+          <a href="https://doi.org/10.71568/daga2026.109" target="_blank" rel="noopener">From Numbers to Perception, Energy Decay Curves Prediction</a>
+          <span class="rmeta">Imran &amp; Schuller · DAGA 2026</span>
+        </span>
+        <span class="rtype paper">PAPER</span>
+      </li>
+    </ul>
+  </section>
+
+
+  <!-- ============================================================
+       CH05 — FINDING THE BUILDING
+       ============================================================
+       Role    : Physical location details for new members.
+       Layout  : .loc-wrap — two-column grid (1.1fr address card +
+                 1fr map embed). Collapses to one column below
+                 720 px via @media query.
+       Map     : OpenStreetMap iframe, dark-mode approximated with
+                 CSS filter: grayscale(0.15) invert(0.92) contrast(0.9).
+       Note    : border-bottom:none inline style on this section
+                 prevents a double border above the footer.
+       CSS     : .loc-wrap, .loc-card, .map-embed, .map-embed iframe,
+                 @media (max-width: 720px) .loc-wrap
+  ============================================================ -->
+  <!-- ============================================================
+       CH05 — 4-WEEK ONBOARDING PLAN
+  ============================================================ -->
+  <section class="track reveal" id="plan">
+    <div class="track-head">
+      <span class="track-tag">CH05</span>
+      <h2>4-Week Onboarding Plan</h2>
+    </div>
+    <p class="track-sub">A structured orientation framework covering infrastructure, teaching preparation, research familiarisation, and practical delivery.</p>
+
+    <div class="week-grid">
+      <div class="week-card">
+        <div class="week-label">Week 1</div>
+        <h3>Infrastructure &amp; Orientation</h3>
+        <ul>
+          <li>TU Ilmenau account setup</li>
+          <li>Moodle and Nextcloud access</li>
+          <li>GitHub organisation and repositories</li>
+          <li>Jupyter and Google Colab environment</li>
+          <li>Lecture and onboarding chatbots</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 2</div>
+        <h3>Teaching Preparation</h3>
+        <ul>
+          <li>Course structure and objectives</li>
+          <li>Assigned textbook chapters</li>
+          <li>Tutorial notebooks and exercises</li>
+          <li>Moodle quizzes and VPL tasks</li>
+          <li>Seminar workflow and grading criteria</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 3</div>
+        <h3>Research Orientation</h3>
+        <ul>
+          <li>Key AMS publications</li>
+          <li>Research repositories and software</li>
+          <li>Research chatbot exploration</li>
+          <li>Experimental reproduction</li>
+          <li>Active research area identification</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 4</div>
+        <h3>Teaching Rehearsal</h3>
+        <ul>
+          <li>Seminar exercise preparation</li>
+          <li>Mock seminar delivery</li>
+          <li>Objective grading definition</li>
+          <li>VPL programming task creation</li>
+          <li>Onboarding checklist review</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       CH06 — RESEARCH PROJECTS
+  ============================================================ -->
+  <section class="track reveal" id="research">
+    <div class="track-head">
+      <span class="track-tag">CH06</span>
+      <h2>Research Projects</h2>
+    </div>
+    <p class="track-sub">Active AMS research areas with dedicated repositories and AI assistants. Chatbots serve as interactive entry points; technical claims should be verified against the corresponding publications and source code.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Black-Box Optimisation &amp; Source Separation</h3>
+        <p>Derivative-free and zeroth-order optimisation methods, including Random Directions, applied to low-delay audio source separation and recurrent neural networks.</p>
+        <div class="links">
+          <a href="https://github.com/TUIlmenauAMS/BlackBoxOptimizerSPcomparison" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-67b4b5dee850819187546a7cd383c5ce-optimization-mentor" target="_blank" rel="noopener" class="alt">Chatbot →</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Instrumental Timbre Transfer</h3>
+        <p>Disentangled representation learning for pitch and timbre, enabling many-to-many instrumental timbre transfer using deep generative models.</p>
+        <div class="links">
+          <a href="https://github.com/TUIlmenauAMS/timbre-transfer" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-Aag9xbTEk-timbre-transfer-for-musical-instruments" target="_blank" rel="noopener" class="alt">Chatbot →</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Climate, Energy &amp; Technology</h3>
+        <p>Quantitative analysis of climate change, energy systems, and technology transition using data-driven modelling and simulation.</p>
+        <div class="links">
+          <a href="https://github.com/TUIlmenauAMS/ClimateChangeCalculated" target="_blank" rel="noopener">GitHub →</a>
+          <a href="https://chatgpt.com/g/g-6829ff3e69cc81918c917c75c6925b35-climate-change-assistant" target="_blank" rel="noopener" class="alt">Chatbot →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       CH07 — ONBOARDING CHECKLIST
+  ============================================================ -->
+  <section class="track reveal" id="checklist">
+    <div class="track-head">
+      <span class="track-tag">CH07</span>
+      <h2>Onboarding Checklist</h2>
+    </div>
+    <p class="track-sub">Onboarding is considered complete when the following competencies and access requirements have been fulfilled.</p>
+
+    <ul class="checklist">
+      <li>Access to all relevant TU Ilmenau systems established</li>
+      <li>Moodle courses for assigned teaching navigated from instructor perspective</li>
+      <li>Teaching material located in Nextcloud</li>
+      <li>Relevant AMS GitHub repositories cloned and reviewed</li>
+      <li>Jupyter and Colab tutorial notebooks executed and modified</li>
+      <li>Lecture chatbots used effectively for course preparation</li>
+      <li>Structure and content of assigned courses understood</li>
+      <li>Representative course exercises solved independently</li>
+      <li>Moodle quizzes created and inspected</li>
+      <li>A VPL programming exercise implemented with automated testing</li>
+      <li>Primary AMS research areas identified</li>
+      <li>Selected AMS publications read and explainable</li>
+      <li>A seminar exercise prepared and rehearsed</li>
+      <li>Objective grading criteria defined for a project task</li>
+      <li>A short mock seminar conducted</li>
+    </ul>
+  </section>
+
+
+  <section class="track reveal" id="location" style="border-bottom:none;">
+    <div class="track-head">
+      <span class="track-tag">CH08</span>
+      <h2>Finding the building</h2>
+    </div>
+
+    <div class="loc-wrap">
+      <div class="loc-card">
+        <h3>Kirchhoffbau</h3>
+        <p>Gustav-Kirchhoff-Straße 1<br>98693 Ilmenau</p>
+        <p>AMS Group offices — Raum K 3013 / K 3014</p>
+        <div class="links" style="margin-top:14px;">
+          <a href="https://stadtplan-ilmenau.de/#!flag=tui&tui=Kirchhoffbau" target="_blank" rel="noopener">Kirchhoffbau on Stadtplan Ilmenau →</a>
+          <a class="alt" href="https://stadtplan-ilmenau.de/#!flag=tui" target="_blank" rel="noopener">Full campus map →</a>
+        </div>
+      </div>
+      <div class="map-embed">
+        <iframe loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=10.9318%2C50.6798%2C10.9478%2C50.6858&layer=mapnik&marker=50.68283%2C10.93976" title="Map showing Kirchhoffbau, Gustav-Kirchhoff-Straße 1, TU Ilmenau"></iframe>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================
+     Role    : Minimal centred page identifier at the bottom.
+     CSS     : footer, footer p
+     Note    : padding-bottom: 70 px (in CSS) prevents mobile
+               browser chrome (home bar, gesture area) from
+               obscuring the footer text on iOS/Android.
+============================================================ -->
+<footer>
+  <p>AMS GROUP — ONBOARDING</p>
+</footer>
+
+
+<!-- ============================================================
+     SCROLL REVEAL — IntersectionObserver
+     ============================================================
+     Purpose : Progressive section entrance animation.
+               Each .reveal element starts at opacity: 0 and
+               translateY(14 px). When it enters the viewport,
+               the "in" class is added, triggering the CSS
+               transition to opacity: 1 and translateY(0).
+     Why IO  : IntersectionObserver fires asynchronously off the
+               main thread — zero scroll-performance impact.
+               A scroll event listener fires synchronously on
+               every frame and requires manual debouncing.
+     Threshold: 0.1 — fires when ≥ 10 % of the element is
+               visible. Natural "just entering" timing.
+     One-shot: The "in" class is never removed. Sections stay
+               visible after scrolling back up; re-animating on
+               scroll-up would feel distracting.
+============================================================ -->
+<script>
+  /**
+   * ScrollReveal — progressive section entrance animation.
+   *
+   * Purpose:
+   *   Each content section carries the CSS class "reveal", which sets
+   *   it to opacity: 0 and translateY(14px) — invisible and slightly
+   *   below its natural position. This script watches those elements
+   *   and adds the "in" class when they enter the viewport, triggering
+   *   the CSS transition to opacity: 1 and translateY(0).
+   *
+   * Why IntersectionObserver instead of a scroll event listener?
+   *   IntersectionObserver fires asynchronously off the main thread,
+   *   so it does not block layout or paint and incurs no scroll-jank.
+   *   A scroll listener would fire on every scroll event and require
+   *   manual debouncing to achieve similar performance.
+   *
+   * @param {IntersectionObserverEntry[]} entries
+   *   Array of entries for elements whose intersection state changed.
+   *   Each entry exposes .isIntersecting (boolean) and .target (Element).
+   *
+   * @param {IntersectionObserver} observer
+   *   The observer instance — not used here because we never unobserve
+   *   (each element animates in once and keeps its .in class).
+   */
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          /* Add .in to trigger the CSS opacity/transform transition */
+          entry.target.classList.add('in');
+          /*
+           * Note: we intentionally do NOT call observer.unobserve(entry.target)
+           * here. The element keeps its .in class permanently, so future
+           * intersection events are harmless no-ops — no visual side effect.
+           */
+        }
+      });
+    },
+    {
+      /*
+       * threshold: 0.1 means the callback fires when at least 10% of the
+       * observed element is visible within the viewport. A value of 0 would
+       * fire as soon as a single pixel enters; 1.0 would require the full
+       * element to be visible. 0.1 gives a natural "just entering the screen"
+       * feel without requiring the whole section to be in view.
+       */
+      threshold: 0.1
+    }
+  );
+
+  /*
+   * Attach the observer to every element carrying the .reveal class.
+   * querySelectorAll returns a static NodeList — we iterate it with forEach.
+   */
+  document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+</script>
+
+
+</body>
+</html>
+<!-- ============================================================
+     END OF FILE — ams-onboarding.html
+     AMS Group · Applied Media Systems Group
+     Technische Universität Ilmenau · Renato Profeta · 2026
+============================================================ -->
