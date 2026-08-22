@@ -459,15 +459,58 @@
     padding:       20px;
   }
 
+  /* Card title row — logo and h3 side by side */
+  .card-header {
+    display:       flex;
+    align-items:   center;
+    gap:           10px;
+    margin-bottom: 8px;
+  }
+
   .card h3 {
-    font-family:   var(--body);  /* body font (not display) — card headings are small */
+    font-family:   var(--body);
     font-weight:   600;
     font-size:     15px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
   }
 
   /* Card body copy — slightly smaller and muted for hierarchy */
   .card p { color: var(--muted); font-size: 13.5px; }
+
+  /* Logo inline with title */
+  .card-logo {
+    width:         24px;
+    height:        24px;
+    object-fit:    contain;
+    display:       block;
+    flex-shrink:   0;
+    opacity:       0.9;
+    border-radius: 3px;
+  }
+
+  /* Inline SVG logo variant */
+  .card-logo-svg {
+    width:       24px;
+    height:      24px;
+    display:     flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .card-logo-svg svg {
+    width:  100%;
+    height: 100%;
+  }
+
+  /* Larger logo variant for logos that need more visual weight */
+  .card-logo-lg {
+    width:      48px !important;
+    height:     48px !important;
+    min-width:  48px;
+    min-height: 48px;
+    object-fit: contain;
+    display:    block;
+    flex-shrink: 0;
+  }
 
   /* Row of link buttons at the bottom of a card */
   .card .links {
@@ -1058,6 +1101,14 @@
         <div class="detail dim">Email — TBD</div>
         <div class="detail dim">Office — TBD</div>
       </div>
+      <div class="person">
+        <h3>Marina Bondarev</h3>
+        <div class="role">Sekretärin · Kauffrau für Büromanagement</div>
+        <div class="detail">+49 3677 69-2890</div>
+        <div class="detail">Fax: +49 3677 69-2888</div>
+        <div class="detail"><a href="mailto:marina.bondarev@tu-ilmenau.de">marina.bondarev@tu-ilmenau.de</a></div>
+        <div class="detail dim">Kirchhoffbau, Raum K 3007</div>
+      </div>
     </div>
   </section>
 
@@ -1081,53 +1132,128 @@
     </div>
 
     <div class="grid">
+
       <div class="card">
-        <h3>TU Ilmenau login</h3>
+        <div class="card-header">
+          <img class="card-logo" src="logos/tui.png" alt="TU Ilmenau logo">
+          <h3>TU Ilmenau login</h3>
+        </div>
         <p>Central university credentials required for access to most institutional systems. Lecture chatbots are accessible without authentication.</p>
       </div>
+
       <div class="card">
-        <h3>Nextcloud</h3>
+        <div class="card-header">
+          <img class="card-logo" src="logos/nextcloud.svg" alt="Nextcloud logo">
+          <h3>Nextcloud</h3>
+        </div>
         <p>Institutional file storage for shared working material, course resources, and group documents.</p>
         <div class="links"><a href="https://cloud.tu-ilmenau.de/login" target="_blank" rel="noopener">Log in →</a></div>
       </div>
+
       <div class="card">
-        <h3>Moodle</h3>
+        <div class="card-header">
+          <img class="card-logo" src="logos/moodle.svg" alt="Moodle logo">
+          <h3>Moodle</h3>
+        </div>
         <p>Learning management system hosting course pages, assignments, quizzes, and the Virtual Programming Lab.</p>
         <div class="links"><a href="https://moodle.tu-ilmenau.de/" target="_blank" rel="noopener">Open Moodle →</a></div>
       </div>
+
       <div class="card">
-        <h3>GitHub</h3>
+        <div class="card-header">
+          <div class="card-logo-svg">
+            <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#ffffff"/>
+            </svg>
+          </div>
+          <h3>GitHub</h3>
+        </div>
         <p>AMS GitHub organisation hosting all course repositories, tutorial notebooks, and research software.</p>
         <div class="links"><a href="https://github.com/TUIlmenauAMS" target="_blank" rel="noopener">TUIlmenauAMS →</a></div>
       </div>
+
       <div class="card">
-        <h3>Jira</h3>
+        <div class="card-header">
+          <img class="card-logo" src="logos/jira.svg" alt="Jira logo">
+          <h3>Jira</h3>
+        </div>
         <p>Issue tracking and project management platform for group research and teaching tasks.</p>
         <div class="links"><a href="#" class="alt">Link — TBD</a></div>
       </div>
+
       <div class="card">
-        <h3>Timetable &amp; exams</h3>
+        <div class="card-header">
+          <div class="card-logo-svg">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="#56e0b0" stroke-width="1.5"/>
+              <path d="M3 9h18" stroke="#56e0b0" stroke-width="1.5"/>
+              <path d="M8 2v4M16 2v4" stroke="#56e0b0" stroke-width="1.5" stroke-linecap="round"/>
+              <rect x="7" y="13" width="2" height="2" rx="0.5" fill="#56e0b0"/>
+              <rect x="11" y="13" width="2" height="2" rx="0.5" fill="#56e0b0"/>
+              <rect x="15" y="13" width="2" height="2" rx="0.5" fill="#56e0b0"/>
+              <rect x="7" y="17" width="2" height="2" rx="0.5" fill="#56e0b0"/>
+              <rect x="11" y="17" width="2" height="2" rx="0.5" fill="#56e0b0"/>
+            </svg>
+          </div>
+          <h3>Timetable &amp; exams</h3>
+        </div>
         <p>Open Timetable for semester schedules; official examination plan for dates, registration deadlines, and regulations.</p>
         <div class="links">
           <a href="https://opentimetable.tu-ilmenau.de" target="_blank" rel="noopener">Open Timetable →</a>
           <a href="https://www.tu-ilmenau.de/studium/im-studium/studienverlauf/administrative-guide/pruefungsplan/bitte-beachten-please-note" target="_blank" rel="noopener" class="alt">Prüfungsplan →</a>
         </div>
       </div>
+
       <div class="card">
-        <h3>AMS Group</h3>
+        <div class="card-header">
+          <img class="card-logo" src="ams_group_tui.png" alt="AMS Group logo">
+          <h3>AMS Group</h3>
+        </div>
         <p>Official group website providing an overview of research directions, team composition, and publications.</p>
         <div class="links"><a href="https://www.tu-ilmenau.de/mt-ams" target="_blank" rel="noopener">AMS Group →</a></div>
       </div>
+
       <div class="card">
-        <h3>Overleaf (LaTeX)</h3>
+        <div class="card-header">
+          <img class="card-logo card-logo-lg" src="logos/overleaf.svg" alt="Overleaf logo">
+          <h3>Overleaf (LaTeX)</h3>
+        </div>
         <p>Collaborative LaTeX editor available via TU Ilmenau institutional access for reports, theses, and publications.</p>
         <div class="links"><a href="https://www.overleaf.com/edu/tu-ilmenau" target="_blank" rel="noopener">Open Overleaf →</a></div>
       </div>
+
       <div class="card">
-        <h3>Onboarding Chatbot</h3>
+        <div class="card-header">
+          <img class="card-logo" src="logos/openai.png" alt="OpenAI logo">
+          <h3>Onboarding Chatbot</h3>
+        </div>
         <p>AI assistant covering group infrastructure, tools, and workflows to support orientation during the onboarding period.</p>
         <div class="links"><a href="https://chatgpt.com/share/6a86cc21-c5d8-83ed-bddf-f97bd9e39911" target="_blank" rel="noopener">Open Chatbot →</a></div>
       </div>
+
+      <div class="card">
+        <div class="card-header">
+          <img class="card-logo card-logo-lg" src="logos/jitsi.png" alt="Jitsi logo">
+          <h3>Jitsi</h3>
+        </div>
+        <p>Open-source video conferencing platform used for remote meetings and online office hours within the group.</p>
+        <div class="links"><a href="#" class="alt">Link — TBD</a></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo-svg">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.5 17a4 4 0 0 1-.5-7.93A5.5 5.5 0 0 1 17 11.5a3.5 3.5 0 0 1-.5 6.93" stroke="#56e0b0" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 13v5M10 16l2 2 2-2" stroke="#56e0b0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Academic Cloud</h3>
+        </div>
+        <p>Federated cloud storage and collaboration platform for research and teaching, accessible via TU Ilmenau institutional login.</p>
+        <div class="links"><a href="https://sso.academiccloud.de/simplesaml/module.php/autodiscover/login.php?AuthState=_5979da49d942c574597572db9f1a52c09858fd59db%3Ahttps%3A%2F%2Fsso.academiccloud.de%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Fkeycloak.sso.gwdg.de%252Fauth%252Frealms%252Facademiccloud%26RelayState%3DSGgrac8-hIb2DMf2OXE6rxlnN90TyrAYOLOYkn5HE_o.JjqhBWXZW_Q.POzauMwgRcOLOd3Glq2ktg%26cookieTime%3D1787394353" target="_blank" rel="noopener">Log in →</a></div>
+      </div>
+
     </div>
   </section>
 
